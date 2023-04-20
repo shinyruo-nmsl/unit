@@ -48,9 +48,11 @@ function patchChildren(oldChildren, newChildren, container) {
     else {
         newChildren.forEach((child) => {
             if (isCustomElement(child) && Array.isArray(oldChildren)) {
-                const oldChild = oldChildren.find((c) => c.hash === child.hash);
-                if (oldChild)
+                const oldChild = oldChildren.find((c) => isCustomElement(c) && c.hash === child.hash);
+                if (oldChild) {
+                    ;
                     child.instance = oldChild.instance;
+                }
             }
             renderCommonElement(child, container);
         });
@@ -67,6 +69,7 @@ function createInstance(el, container) {
         props,
         methods,
         $emit(targetName, ...args) {
+            ;
             this.props['@' + targetName](...args);
         },
     };
@@ -96,10 +99,12 @@ function createInstance(el, container) {
                 renderCommonElement(newEl, container);
             }
             else if (isCustomElement(this.element)) {
+                ;
                 newEl.instance = this.element.instance;
                 renderCommonElement(newEl, container);
             }
             else {
+                ;
                 newEl.dom = this.element.dom;
                 container.appendChild(newEl.dom);
                 patchChildren(this.element.children, newEl.children, this.element.dom);

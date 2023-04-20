@@ -50,8 +50,12 @@ function patchChildren(
   } else {
     newChildren.forEach((child) => {
       if (isCustomElement(child) && Array.isArray(oldChildren)) {
-        const oldChild = oldChildren.find((c) => c.hash === child.hash)
-        if (oldChild) child.instance = oldChild.instance
+        const oldChild = oldChildren.find(
+          (c) => isCustomElement(c) && (c as CustomElement).hash === (child as CustomElement).hash
+        )
+        if (oldChild) {
+          ;(child as CustomElement).instance = (oldChild as CustomElement).instance
+        }
       }
       renderCommonElement(child, container)
     })
@@ -70,12 +74,12 @@ export function createInstance(el: CustomElement, container: HTMLElement): Insta
     props,
     methods,
     $emit(targetName: string, ...args: any[]) {
-      this.props['@' + targetName](...args)
+      ;(this.props as { [key: string]: Function })['@' + targetName](...args)
     },
   }
 
   const context = new Proxy(instance, {
-    get(target, key) {
+    get(target: any, key) {
       if (key in target.data) {
         return target.data[key as string]
       }
@@ -101,11 +105,11 @@ export function createInstance(el: CustomElement, container: HTMLElement): Insta
       if (!hasInit(this)) {
         renderCommonElement(newEl, container)
       } else if (isCustomElement(this.element!)) {
-        newEl.instance = this.element.instance
+        ;(newEl as CustomElement).instance = (this.element as CustomElement).instance
         renderCommonElement(newEl, container)
       } else {
-        newEl.dom = this.element.dom
-        container.appendChild(newEl.dom)
+        ;(newEl as NativeElement).dom = (this.element as NativeElement).dom
+        container.appendChild((newEl as NativeElement).dom)
         patchChildren(
           (this.element! as NativeElement).children,
           (newEl as NativeElement).children,
