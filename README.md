@@ -1,2 +1,2 @@
-# unit
-simple reactive component 
+# a simple reactive mvvm imitating Vue
+
