@@ -131,9 +131,11 @@ export function renderNativeElement(el: NativeElement, container: HTMLElement) {
     el.children.forEach((child) => renderCommonElement(child, el.dom!))
   }
 
-  Object.keys(el.props).forEach((eventName) => {
-    if (eventName.startsWith('@')) {
-      el.dom.addEventListener(eventName.slice(1), el.props[eventName])
+  Object.keys(el.props).forEach((key) => {
+    if (key.startsWith('@')) {
+      el.dom.addEventListener(key.slice(1), el.props[key])
+    } else if (key === 'class') {
+      el.dom.className = el.props[key]
     }
   })
 }

@@ -20,6 +20,7 @@
     "src/**/*.tsx",
     "tests/**/*.ts",
     "tests/**/*.tsx",
+    "./externals.d.ts"
   ],
   "exclude": ["node_modules"]
 }

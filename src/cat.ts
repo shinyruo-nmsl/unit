@@ -1,6 +1,6 @@
 import { Config } from './util'
 
-export const catCfg: Config = {
+const catCfg: Config = {
   data() {
     return {
       name: 'xiangguo',
@@ -10,10 +10,10 @@ export const catCfg: Config = {
   props: ['owner', '@laugh'],
   methods: {
     laugh() {
-      this.$emit('laugh', 'miaomiao~')
+      ;(this as any).$emit('laugh', 'miaomiao~')
     },
     growUp() {
-      this.age++
+      ;(this as any).age++
     },
   },
   createElement() {
@@ -26,13 +26,15 @@ export const catCfg: Config = {
           dom: null,
           type: 'div',
           props: {},
-          children: `my name is ${this.name}, my age is ${this.age}, my owner is ${this.owner}`,
+          children: `my name is ${(this as any).name}, my age is ${(this as any).age}, my owner is ${
+            (this as any).owner
+          }`,
         },
         {
           dom: null,
           type: 'button',
           props: {
-            '@click': this.laugh.bind(this),
+            '@click': (this as any).laugh.bind(this as any),
           },
           children: '点我^_^',
         },
@@ -40,7 +42,7 @@ export const catCfg: Config = {
           dom: null,
           type: 'button',
           props: {
-            '@click': this.growUp.bind(this),
+            '@click': (this as any).growUp.bind(this as any),
           },
           children: '点我++',
         },
@@ -48,3 +50,5 @@ export const catCfg: Config = {
     }
   },
 }
+
+export default catCfg

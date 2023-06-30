@@ -1,11 +1,13 @@
 import { Config, CustomElement } from './util'
-import { catCfg } from './cat'
+import './human.less'
+import catCfg from './cat'
+import _ from 'lodash/cloneDeep'
 
 export const humanCfg: Config = {
   data() {
     return {
-      name: 'Bridge',
-      age: 2,
+      name: _('Bridge'),
+      age: _(2),
     }
   },
   props: ['father', 'mother'],
@@ -14,27 +16,34 @@ export const humanCfg: Config = {
       alert(v)
     },
     growUp() {
-      this.age++
-      alert(this.age)
+      ;(this as any).age++
+      alert((this as any).age)
     },
   },
   createElement() {
     return {
       dom: null,
       type: 'div',
-      props: {},
+      props: {
+        class: 'human-box',
+      },
       children: [
         {
           dom: null,
           type: 'div',
-          props: {},
-          children: `my age is ${this.age}, my father is ${this.father}, my mother is ${this.mother}`,
+          props: {
+            class: 'human-intro',
+          },
+          children: `my age is ${(this as any).age}, my father is ${(this as any).father}, my mother is ${
+            (this as any).mother
+          }`,
         },
         {
           dom: null,
           type: 'button',
           props: {
-            '@click': this.growUp.bind(this),
+            '@click': (this as any).growUp.bind(this as any),
+            class: 'human-button',
           },
           children: '点我长大',
         },
@@ -42,8 +51,8 @@ export const humanCfg: Config = {
           hash: 'CAT_1',
           type: catCfg,
           props: {
-            owner: this.father,
-            '@laugh': this.laugh.bind(this),
+            owner: (this as any).father,
+            '@laugh': (this as any).laugh.bind(this as any),
           },
           instance: null,
         },
@@ -52,7 +61,7 @@ export const humanCfg: Config = {
   },
 }
 
-export const humanInstanceEl: CustomElement = {
+const humanInstanceEl: CustomElement = {
   hash: 'HUMAN_1',
   type: humanCfg,
   props: {
@@ -61,3 +70,5 @@ export const humanInstanceEl: CustomElement = {
   },
   instance: null,
 }
+
+export default humanInstanceEl

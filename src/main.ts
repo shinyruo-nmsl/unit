@@ -1,4 +1,7 @@
 import { renderCommonElement } from './util'
-import { humanInstanceEl } from './human'
+// import humanInstanceEl from './human'
 
-renderCommonElement(humanInstanceEl, document.getElementById('app')!)
+;(async () => {
+  const humanInstanceEl = (await import('./human')).default
+  renderCommonElement(humanInstanceEl, document.getElementById('app')!)
+})()
