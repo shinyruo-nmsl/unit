@@ -1,3 +1,20 @@
+let isFlushing = false
+let queueJobs = new Set<Function>()
+
+const p = Promise.resolve()
+
+function asyncUpdate() {
+  if (isFlushing) return
+
+  isFlushing = true
+  p.then(() => {
+    queueJobs.forEach((job) => job())
+  }).finally(() => {
+    isFlushing = false
+    queueJobs.clear()
+  })
+}
+
 export function reactive(obj: Record<string, any>): Record<string, any> {
   const observerMap = {}
   return new Proxy(obj, {
@@ -17,9 +34,10 @@ export function reactive(obj: Record<string, any>): Record<string, any> {
   })
 }
 
-let currentEffect: Function
+let currentEffect: Function | null = null
 
 function track(key: string, observerMap: { [prop: string]: Function[] }) {
+  if (!currentEffect) return
   if (!observerMap[key]) {
     observerMap[key] = []
   }
@@ -28,11 +46,31 @@ function track(key: string, observerMap: { [prop: string]: Function[] }) {
 
 function trigger(key: string, observerMap: { [prop: string]: Function[] }) {
   if (observerMap[key]) {
-    observerMap[key].forEach((fn) => fn())
+    observerMap[key].forEach((fn) => {
+      if ((fn as any).schedule) {
+        queueJobs.add(fn)
+        asyncUpdate()
+      } else {
+        fn()
+      }
+    })
   }
 }
 
-export function effect(fn: Function) {
+type EffectOptions = {
+  schedule?: boolean
+}
+
+export function effect(
+  fn: Function,
+  options: EffectOptions = {
+    schedule: true,
+  }
+) {
   currentEffect = fn
+  if (options && options.schedule) {
+    ;(currentEffect as any).schedule = true
+  }
   currentEffect()
+  currentEffect = null
 }
