@@ -1,7 +1,5 @@
-import { renderCommonElement } from './util'
-// import humanInstanceEl from './human'
+import { createApp } from './util'
+import humanInstanceEl from './human'
+import Routers from './router'
 
-;(async () => {
-  const humanInstanceEl = (await import('./human')).default
-  renderCommonElement(humanInstanceEl, document.getElementById('app')!)
-})()
+createApp(humanInstanceEl, document.getElementById('app')!, Routers)

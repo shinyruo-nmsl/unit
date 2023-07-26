@@ -1,8 +1,16 @@
 import { reactive, effect } from './reactive'
+import { currentRouteElements } from './router'
+
+export const RouterPlaceholder = 'router_placeholder'
 
 export interface CommonElement {
   type: string | Config
   props: Record<string, any>
+}
+
+export interface RouterElement extends CommonElement {
+  type: typeof RouterPlaceholder
+  el: CustomElement | null
 }
 
 export interface NativeElement extends CommonElement {
@@ -27,7 +35,7 @@ export interface Config {
 
 export interface Instance {
   element: CommonElement | null
-  render: () => void
+  render: (routerOptions?: { elements: CustomElement[]; curIndex: number }) => void
 }
 
 function hasInit(ins: Instance) {
@@ -36,6 +44,10 @@ function hasInit(ins: Instance) {
 
 function isCustomElement(el: CommonElement) {
   return !(typeof el.type === 'string')
+}
+
+function isRouteElement(el: CommonElement) {
+  return el.type === RouterPlaceholder
 }
 
 function patchChildren(
@@ -56,6 +68,9 @@ function patchChildren(
         if (oldChild) {
           ;(child as CustomElement).instance = (oldChild as CustomElement).instance
         }
+      } else if (isRouteElement(child) && Array.isArray(oldChildren)) {
+        const oldRoute = oldChildren.find(isRouteElement)!
+        ;(child as RouterElement).el = (oldRoute as RouterElement).el
       }
       renderCommonElement(child, container)
     })
@@ -109,10 +124,12 @@ export function createInstance(el: CustomElement, container: HTMLElement): Insta
         renderCommonElement(newEl, container)
       } else {
         ;(newEl as NativeElement).dom = (this.element as NativeElement).dom
-        container.appendChild((newEl as NativeElement).dom)
+        if ((newEl as NativeElement).dom.parentNode !== container) {
+          container.appendChild((newEl as NativeElement).dom)
+        }
         patchChildren(
-          (this.element! as NativeElement).children,
-          (newEl as NativeElement).children,
+          (this.element! as NativeElement).children as string | CommonElement[],
+          (newEl as NativeElement).children as string | CommonElement[],
           (this.element! as NativeElement).dom
         )
       }
@@ -143,14 +160,27 @@ export function renderNativeElement(el: NativeElement, container: HTMLElement) {
 export function renderCustomElement(el: CustomElement, container: HTMLElement) {
   if (!el.instance) {
     el.instance = createInstance(el, container)
+    effect(() => {
+      el.instance!.render()
+    })
+  } else {
+    el.instance.render()
   }
+}
 
-  effect(() => el.instance!.render())
+function renderRouteElement(el: RouterElement, container: HTMLElement) {
+  if (currentRouteElements.length) {
+    const routeEl = currentRouteElements.shift()!
+    el.el = routeEl
+  }
+  el.el && renderCustomElement(el.el!, container)
 }
 
 export function renderCommonElement(el: CommonElement, container: HTMLElement) {
   if (isCustomElement(el)) {
     renderCustomElement(el as CustomElement, container)
+  } else if (isRouteElement(el)) {
+    renderRouteElement(el as RouterElement, container)
   } else {
     renderNativeElement(el as NativeElement, container)
   }

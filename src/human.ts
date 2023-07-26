@@ -1,4 +1,4 @@
-import { Config, CustomElement } from './util'
+import { Config, CustomElement, RouterPlaceholder } from './util'
 import './human.less'
 import catCfg from './cat'
 import _ from 'lodash/cloneDeep'
@@ -55,6 +55,11 @@ export const humanCfg: Config = {
             '@laugh': (this as any).laugh.bind(this as any),
           },
           instance: null,
+        },
+        {
+          type: RouterPlaceholder,
+          el: null,
+          props: {},
         },
       ],
     }

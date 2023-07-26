@@ -11,6 +11,7 @@ function asyncUpdate() {
     queueJobs.forEach((job) => job())
   }).finally(() => {
     isFlushing = false
+    queueJobs.clear()
   })
 }
 
@@ -33,9 +34,10 @@ export function reactive(obj: Record<string, any>): Record<string, any> {
   })
 }
 
-let currentEffect: Function
+let currentEffect: Function | null = null
 
 function track(key: string, observerMap: { [prop: string]: Function[] }) {
+  if (!currentEffect) return
   if (!observerMap[key]) {
     observerMap[key] = []
   }
@@ -59,10 +61,16 @@ type EffectOptions = {
   schedule?: boolean
 }
 
-export function effect(fn: Function, options?: EffectOptions) {
+export function effect(
+  fn: Function,
+  options: EffectOptions = {
+    schedule: true,
+  }
+) {
   currentEffect = fn
   if (options && options.schedule) {
     ;(currentEffect as any).schedule = true
   }
   currentEffect()
+  currentEffect = null
 }
